@@ -1,0 +1,61 @@
+; Lulbot Taz Pro dual extruder (using only 1)
+M117 Single-E V1.2.4
+M73 P0                                               ; clear GLCD progress bar
+M75                                                  ; start GLCD timer
+M107                                                 ; disable fans
+G90                                                  ; absolute positioning
+M420 S0                                              ; disable previous leveling matrix
+
+M104 S170 T0                                         ; soften filament
+M140 S{material_bed_temperature_layer_0}             ; begin bed temping up
+G28                                                  ; home
+G1 X-16.5 Y100 Z40 F2000                             ; move above wiper pad
+M109 R170 T0                                         ; wait for temp
+M109 R170 T1                                         ; wait for temp
+
+T0                                                   ; select first extruder
+M82                                                  ; set extruder to absolute mode
+G92 E0                                               ; set extruder to zero
+G1 E-2 F200                                          ; retraction
+
+M117 Wiping Left...
+G1 Z 1.2                                             ; push nozzle into wiper
+G1 X -16.5 Y30 F2000                                 ; wipe partway
+G1 X -16.5 Y80 F2000                                 ; wipe back
+G1 X -16.5 Y19 F2000                                 ; wipe the rest of the way
+G1 X -16.5 Y19 Z20 F1000                             ; raise extruder
+M106 S255                                            ; turn on fan to blow away fuzzies
+M107                                                 ; turn off fan
+
+M117 Auto Leveling...
+M204 S250                                            ; set accel for probing
+G29                                                  ; probe sequence (for auto-leveling)
+M420 S1                                              ; enable leveling matrix
+M204 S500                                            ; set accel back to normal
+
+M104 S{material_print_temperature_layer_0}  T0       ; set extruder temp
+M104 S{material_print_temperature_layer_0}  T1       ; set extruder temp
+G1 X100 Y-29 Z0.5 F3000                              ; move to open space
+M400                                                 ; clear buffer
+M109 R{material_print_temperature_layer_0}  T0       ; wait for temp
+M109 R{material_print_temperature_layer_0}  T1       ; wait for temp
+
+M117 Purging Left...
+G1 E0 F100                                           ; undo retraction
+G92 E-15                                             ; set extruder negative amount to purge
+G1 E0 F100                                           ; purge XXmm of filament
+G1 E-3 F200                                          ; purge retraction
+G1 Z0.35                                             ; clear bed (barely)
+G1 X100 Y10 F4000                                    ; move above bed to shear off filament
+
+M106 S255                                            ; turn on fan
+G4 S2                                                ; wait 2 seconds
+M107                                                 ; turn off fan
+G1 X180 Y-29 Z0.45 F3000                             ; move to open space
+
+G1 Z2 E0 F75                                         ; raise head and 0 extruder
+M82                                                  ; set to absolute mode
+M400                                                 ; clear buffer
+M117 Getting Your Mom's Number...                    ; very much needed message
+G4 S1                                                ; wait 1 second
+M117 Printing...
